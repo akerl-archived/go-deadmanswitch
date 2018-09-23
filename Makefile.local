@@ -1,0 +1,3 @@
+PACKAGE = go-deadmanswitch
+NAMESPACE = github.com/akerl
+OSLIST = linux

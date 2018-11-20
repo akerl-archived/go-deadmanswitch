@@ -1,12 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"regexp"
 
+	"github.com/akerl/go-lambda/apigw/events"
 	"github.com/akerl/go-lambda/mux"
 	"github.com/akerl/go-lambda/s3"
-	"github.com/aws/aws-lambda-go/lambda"
+
+
+var (
+	triggerRegex = regexp.MustCompile(`^/trigger$`)
+	reportRegex  = regexp.MustCompile(`^/report$`)
+	defaultRegex = regexp.MustCompile(`^/.*$`)
 )
 
 type check struct {
@@ -21,11 +27,6 @@ type config struct {
 }
 
 var c config
-
-func handler() error {
-	fmt.Println("We did it!")
-	return nil
-}
 
 func loadConfig() {
 	cf, err := s3.GetConfigFromEnv(&c)
@@ -42,11 +43,41 @@ func loadConfig() {
 func main() {
 	loadConfig()
 
+	reportRoute := &mux.Route{
+		Path: reportRegex,
+		SimpleReceiver: mux.SimpleReceiver{
+			HandleFunc: reportFunc,
+			AuthFunc:   reportAuthFunc,
+		},
+	}
+
 	d := mux.NewDispatcher(
+		mux.NewRoute(triggerRegex, triggerFunc),
+		reportRoute,
+		mux.NewRoute(defaultRegex, defaultFunc),
 		&mux.SimpleReceiver{
-			HandleFunc: handleFunc,
-			AuthFunc:   authFunc,
+			HandleFunc: cronFunc,
+			AuthFunc:   cronAuthFunc,
 		},
 	)
 	mux.Start(d)
+}
+
+func reportFunc(req events.Request) (events.Response, error) {
+}
+
+func reportAuthFunc(req events.Request) (events.Response, error) {
+}
+
+func triggerFunc(req events.Request) (events.Response, error) {
+}
+
+func defaultFunc(req events.Request) (events.Response, error) {
+	return events.Redirect("https://"+req.Headers["Host"] + "/report", 303)
+}
+
+func cronFunc(req events.Request) (events.Response, error) {
+}
+
+func cronAuthFunc(req events.Request) (events.Response, error) {
 }

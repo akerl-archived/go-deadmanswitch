@@ -15,29 +15,13 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	checkPath = "checks/"
-)
-
 var (
 	triggerRegex = regexp.MustCompile(`^/trigger$`)
 	reportRegex  = regexp.MustCompile(`^/report$`)
 	defaultRegex = regexp.MustCompile(`^/.*$`)
 )
 
-type check struct {
-	Name  string
-	Code  string
-	Stale int
-}
-
-type config struct {
-	Checks []check
-	Alert  string
-}
-
-var c config
-var bucket string
+var config Config
 
 func loadConfig() {
 	cf, err := s3.GetConfigFromEnv(&c)
@@ -53,19 +37,16 @@ func loadConfig() {
 
 func main() {
 	loadConfig()
-	bucket = os.Getenv("S3_BUCKET")
-
-	reportRoute := &mux.Route{
-		Path: reportRegex,
-		SimpleReceiver: mux.SimpleReceiver{
-			HandleFunc: reportFunc,
-			AuthFunc:   reportAuthFunc,
-		},
-	}
 
 	d := mux.NewDispatcher(
 		mux.NewRoute(triggerRegex, triggerFunc),
-		reportRoute,
+		&mux.Route{
+			Path: reportRegex,
+			SimpleReceiver: mux.SimpleReceiver{
+				HandleFunc: reportFunc,
+				AuthFunc:   reportAuthFunc,
+			},
+		},
 		mux.NewRoute(defaultRegex, defaultFunc),
 		&mux.SimpleReceiver{
 			HandleFunc: cronFunc,
@@ -87,30 +68,16 @@ func triggerFunc(req events.Request) (events.Response, error) {
 		return events.Fail("No code provided")
 	}
 
-	if _, err := uuid.Parse(code); err != nil {
+	check, found := c.Checks.CheckFromCode(code)
+	if !found {
 		return events.Fail("Invalid code")
 	}
 
-	s3client, err := s3.Client()
+	err := config.WriteCheck(check)
 	if err != nil {
-		return events.Fail("Failed to load S3 client")
+		return events.Fail(err)
 	}
-
-	key := checkPath + code
-
-	data := string(time.Now().Unix())
-
-	input := &s3api.PutObjectInput{
-		Body:   bytes.NewReader([]byte(data)),
-		Bucket: &bucket,
-		Key:    &key,
-	}
-	s3req := s3client.PutObjectRequest(input)
-	_, err = s3req.Send()
-	if err != nil {
-		return events.Fail("Failed to post")
-	}
-	return events.Succeed("Updated!")
+	return events.Succeed("Check updated")
 }
 
 func defaultFunc(req events.Request) (events.Response, error) {

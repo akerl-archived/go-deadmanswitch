@@ -1,8 +1,9 @@
 checks:
-  - name: alfa
-    code: 03A72C8C-585A-4C32-9253-E2C1418E4A57
-    stale: 3600
-  - name: beta
-    code: B24EF7D4-886E-4A7A-8899-4BC01184F225
-    stale: 3600
-alert: https://slack/hook/here
+- name: alfa
+  code: 03A72C8C-585A-4C32-9253-E2C1418E4A57
+  stale: 3600
+- name: beta
+  code: B24EF7D4-886E-4A7A-8899-4BC01184F225
+  stale: 3600
+alert:
+- https://slack/hook/here

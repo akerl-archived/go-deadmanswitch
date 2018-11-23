@@ -85,6 +85,15 @@ func defaultFunc(req events.Request) (events.Response, error) {
 }
 
 func cronFunc(req events.Request) (events.Response, error) {
+	for _, c := range config.Checks {
+		ok, err := config.IsCheckStale(c)
+		if err != nil {
+			return events.Fail("Failed to parse check")
+		}
+		if !ok {
+			alert(c)
+		}
+	}
 }
 
 func cronAuthFunc(req events.Request) (events.Response, error) {

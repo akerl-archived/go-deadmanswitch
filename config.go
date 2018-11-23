@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/akerl/go-lambda/s3"
 	s3api "github.com/aws/aws-sdk-go-v2/service/s3"
@@ -40,6 +41,26 @@ func (c Config) loadS3Client() error {
 	var err error
 	c.s3client, err = s3.Client()
 	return err
+}
+
+func (c Config) ReadCheck(check Check) (int64, error) {
+	key := c.CheckPath + check.Code
+	resp, err := s3.GetObject(c.Bucket, key)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(string(resp), 10, 64)
+}
+
+func (c Config) IsCheckStale(check Check) (bool, error) {
+	ts, err := c.ReadCheck(check)
+	if err != nil {
+		return false, err
+	}
+	if ts+check.Stale < time.Now().Unix() {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (c Config) WriteCheck(check Check) error {

@@ -9,14 +9,17 @@ import (
 	s3api "github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+// Check defines an individual item to monitor
 type Check struct {
 	Name  string
 	Code  string
-	Stale int
+	Stale int64
 }
 
+// CheckSet defines a set of checks
 type CheckSet []Check
 
+// Config defines a set of checks and their metadata
 type Config struct {
 	Bucket   string
 	Path     string
@@ -25,13 +28,20 @@ type Config struct {
 	s3client *s3api.S3
 }
 
-func (cs CheckSet) CheckFromCode(code string) (check, bool) {
-	for _, c := range cs {
-		if c.Code == code {
-			return c, true
+// CheckFromCode finds a check matching the given code
+func (c Config) CheckFromCode(code string) (Check, bool) {
+	for _, check := range c.Checks {
+		if check.Code == code {
+			return check, true
 		}
 	}
 	return Check{}, false
+}
+
+// Alert sends an alert for the failing check
+func (c Config) Alert(check Check) error {
+	//TODO handle alerts
+	return nil
 }
 
 func (c Config) loadS3Client() error {
@@ -43,8 +53,9 @@ func (c Config) loadS3Client() error {
 	return err
 }
 
+// ReadCheck returns the last timestamp for the check
 func (c Config) ReadCheck(check Check) (int64, error) {
-	key := c.CheckPath + check.Code
+	key := c.Path + check.Code
 	resp, err := s3.GetObject(c.Bucket, key)
 	if err != nil {
 		return 0, err
@@ -52,6 +63,7 @@ func (c Config) ReadCheck(check Check) (int64, error) {
 	return strconv.ParseInt(string(resp), 10, 64)
 }
 
+// IsCheckStale reads a check timestamp and compares it to the stale window
 func (c Config) IsCheckStale(check Check) (bool, error) {
 	ts, err := c.ReadCheck(check)
 	if err != nil {
@@ -63,13 +75,14 @@ func (c Config) IsCheckStale(check Check) (bool, error) {
 	return false, nil
 }
 
+// WriteCheck updates the stored timestamp
 func (c Config) WriteCheck(check Check) error {
 	if err := c.loadS3Client(); err != nil {
 		return err
 	}
 
-	key := c.CheckPath + check.Code
-	ts := strconv.FormatInt(time.Now().Unix())
+	key := c.Path + check.Code
+	ts := strconv.FormatInt(time.Now().Unix(), 10)
 
 	input := &s3api.PutObjectInput{
 		Body:   strings.NewReader(ts),
@@ -77,6 +90,6 @@ func (c Config) WriteCheck(check Check) error {
 		Key:    &key,
 	}
 	s3req := c.s3client.PutObjectRequest(input)
-	_, err = s3req.Send()
+	_, err := s3req.Send()
 	return err
 }

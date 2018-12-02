@@ -66,14 +66,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
-  name = "github.com/google/uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
-  version = "v1.1.0"
-
-[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -81,12 +73,12 @@
   revision = "0b12d6b5"
 
 [[projects]]
-  digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -96,7 +88,6 @@
     "github.com/akerl/go-lambda/mux",
     "github.com/akerl/go-lambda/s3",
     "github.com/aws/aws-sdk-go-v2/service/s3",
-    "github.com/google/uuid",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

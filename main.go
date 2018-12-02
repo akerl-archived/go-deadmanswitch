@@ -1,18 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
-	"time"
 
 	"github.com/akerl/go-lambda/apigw/events"
 	"github.com/akerl/go-lambda/mux"
 	"github.com/akerl/go-lambda/s3"
-	s3api "github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/google/uuid"
 )
 
 var (
@@ -24,7 +19,7 @@ var (
 var config Config
 
 func loadConfig() {
-	cf, err := s3.GetConfigFromEnv(&c)
+	cf, err := s3.GetConfigFromEnv(&config)
 	if err != nil {
 		log.Print(err)
 		panic(err)
@@ -57,9 +52,13 @@ func main() {
 }
 
 func reportFunc(req events.Request) (events.Response, error) {
+	//TODO add report
+	return events.Succeed("Placeholder")
 }
 
 func reportAuthFunc(req events.Request) (events.Response, error) {
+	//TODO add report auth
+	return events.Response{}, nil
 }
 
 func triggerFunc(req events.Request) (events.Response, error) {
@@ -68,14 +67,14 @@ func triggerFunc(req events.Request) (events.Response, error) {
 		return events.Fail("No code provided")
 	}
 
-	check, found := c.Checks.CheckFromCode(code)
+	check, found := config.CheckFromCode(code)
 	if !found {
 		return events.Fail("Invalid code")
 	}
 
 	err := config.WriteCheck(check)
 	if err != nil {
-		return events.Fail(err)
+		return events.Fail("Failed to write check")
 	}
 	return events.Succeed("Check updated")
 }
@@ -91,9 +90,13 @@ func cronFunc(req events.Request) (events.Response, error) {
 			return events.Fail("Failed to parse check")
 		}
 		if !ok {
-			alert(c)
+			err := config.Alert(c)
+			if err != nil {
+				return events.Fail("Failed to alert for check")
+			}
 		}
 	}
+	return events.Succeed("Successful cron run")
 }
 
 func cronAuthFunc(req events.Request) (events.Response, error) {

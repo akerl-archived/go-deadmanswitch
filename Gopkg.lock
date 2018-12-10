@@ -11,10 +11,10 @@
     "s3",
   ]
   pruneopts = "UT"
-  revision = "a5eb7e6f5f9ff3357a077cddd34f23d7e1b42ac5"
+  revision = "6312da0070efc7e22ae4832159b528b1b6510840"
 
 [[projects]]
-  digest = "1:a4fae639114a906f205a4cb858c670ca28784426c0e809d664de2babb13cb28c"
+  digest = "1:8b4d009bfb2d13472dad368bf7520c482dd7f8a190436da4e6d52111c0a2e697"
   name = "github.com/aws/aws-lambda-go"
   packages = [
     "events",
@@ -23,8 +23,8 @@
     "lambdacontext",
   ]
   pruneopts = "UT"
-  revision = "fb8f88d824489a878aee1e0badde7d8e129f8767"
-  version = "v1.7.0"
+  revision = "9e3676ee8ca83aee500682f382e10b9d03660093"
+  version = "v1.8.0"
 
 [[projects]]
   digest = "1:4d4e43dde8f1abbef98f5e0e7e4fd6f0e98cbb81d3407cfb3b9aee6fcbf877d1"

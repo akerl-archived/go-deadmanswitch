@@ -26,12 +26,12 @@
 
 
 [[constraint]]
-  branch = "master"
   name = "github.com/akerl/go-lambda"
+  version = "0.4.1"
 
 [[constraint]]
   name = "github.com/aws/aws-sdk-go-v2"
-  version = "2.0.0-preview.5"
+  version = "0.6.0"
 
 [prune]
   go-tests = true

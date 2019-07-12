@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"time"
@@ -25,7 +26,7 @@ type Config struct {
 	Path     string
 	Checks   CheckSet
 	Alerts   []string
-	s3client *s3api.S3
+	s3client *s3api.Client
 }
 
 // CheckFromCode finds a check matching the given code
@@ -90,6 +91,6 @@ func (c Config) WriteCheck(check Check) error {
 		Key:    &key,
 	}
 	s3req := c.s3client.PutObjectRequest(input)
-	_, err := s3req.Send()
+	_, err := s3req.Send(context.Background())
 	return err
 }
